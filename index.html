@@ -94,15 +94,15 @@
     // Widget Cloudinary (sin cambios)
     // Busca esta parte en tu script y cámbiala:
 const widget = cloudinary.createUploadWidget({
-    cloudName: "duscmxxws",
-    
+    cloudName: "duscmxxws", 
+    uploadPreset: "clinic_preset" 
 }, (error, result) => { 
     if (error) {
-        console.error("Error capturado:", error);
+        console.error("Error exacto:", error);
         return;
     }
     if (result && result.event === "success") {
-        manejarSubida(window.currentDocType, result.info.secure_url);
+        manejarSubida(window.currentDocType, result.info.secure_url); 
     }
 });
     function abrirCloudinary(tipo) {
