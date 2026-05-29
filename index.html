@@ -136,25 +136,42 @@
             body: JSON.stringify({tipo, url, paciente, mes, observaciones: obs})
         });
     }
-
-    // CORRECCIÓN AQUÍ: Usamos encodeURIComponent y tratamos la respuesta como Objeto
     async function alSeleccionarPaciente() {
-        const p = document.getElementById('pacienteSelector').value;
-        if(!p) return;
+    const p = document.getElementById('pacienteSelector').value;
+    if(!p) return;
+    
+    // Llamada segura a la API
+    const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}`);
+    const arch = await res.json(); 
+    
+    const lista = document.getElementById('listaLinks');
+    lista.innerHTML = '';
+    
+    // Lista de campos técnicos que queremos ocultar del historial
+    const ignorar = ['DETALLE', 'EXENTO', 'FACTURADO', 'FACTURADO_SAEI', 'IGNORAR_FACTURA', 'PRES', 'TOTAL'];
+    
+    // Iteramos sobre los archivos encontrados
+    for (const key in arch) {
+        // 1. Filtramos: Si es un campo técnico o una observación, lo saltamos
+        if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
         
-        // Usamos encodeURIComponent para que el nombre (ej: "Acosta, Lautaro") no rompa la URL
-        const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}`);
-        const arch = await res.json(); 
+        // 2. Formateamos el nombre: "ASISTENCIA_05-2026" -> "ASISTENCIA | 05-2026"
+        let displayNombre = key.replace(/_/g, ' | ').toUpperCase();
         
-        const lista = document.getElementById('listaLinks');
-        lista.innerHTML = '';
-        
-        // El servidor devuelve un objeto con los archivos, iteramos correctamente:
-        for (const key in arch) {
-            if(key.startsWith('OBSERVACIONES')) continue;
-            lista.innerHTML += `<a href="${arch[key]}" target="_blank" class="link-descarga"><span>📄 ${key.toUpperCase()}</span><span>⬇️</span></a>`;
-        }
+        // 3. Renderizamos el botón limpio en el historial
+        lista.innerHTML += `
+            <a href="${arch[key]}" target="_blank" class="link-descarga">
+                <span>📄 ${displayNombre}</span>
+                <span>⬇️</span>
+            </a>`;
     }
+    
+    // Si no quedaron archivos, avisamos
+    if (lista.innerHTML === '') {
+        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente.</p>';
+    }
+}
+    
 
     function filtrarSelect() {
         const t = document.getElementById('busqueda').value.toLowerCase();
