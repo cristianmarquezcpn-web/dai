@@ -92,18 +92,15 @@
     };
 
     // Widget Cloudinary (sin cambios)
-    const widget = cloudinary.createUploadWidget({
+    // Busca esta parte en tu script y cámbiala:
+const widget = cloudinary.createUploadWidget({
     cloudName: CLOUD_NAME, 
-    uploadPreset: "unsigned_preset" 
-}, (error, result) => { 
-    if (error) {
-        console.error("Error detallado de Cloudinary:", error); // <-- MIRA ESTO EN LA CONSOLA
-        alert("Error de subida: " + JSON.stringify(error));
-        return;
-    }
-    if (result && result.event === "success") {
+    uploadPreset: "preajuste_clínica" 
+}, 
+(error, result) => { 
+    if (!error && result && result.event === "success") {
         manejarSubida(window.currentDocType, result.info.secure_url); 
-    }
+    } 
 });
     function abrirCloudinary(tipo) {
         const p = document.getElementById('pacienteSelector').value;
