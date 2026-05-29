@@ -142,47 +142,49 @@ async function manejarSubida(tipo, url) {
     const p = document.getElementById('pacienteSelector').value;
     if(!p) return;
     
-    // Llamada con timestamp para evitar caché
     const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}?t=${Date.now()}`);
     const arch = await res.json(); 
-    
-    console.log("Datos recibidos para analizar:", arch); 
     
     const lista = document.getElementById('listaLinks');
     lista.innerHTML = '';
     
-    const ignorar = ['DETALLE', 'CUIT','EXENTO', 'FACTURADO', 'FACTURADO_SAEI','ULTIMA_FACTURA', 'IGNORAR_FACTURA', 'PRES', 'TOTAL'];
+    const ignorar = ['DETALLE', 'CUIT', 'EXENTO', 'FACTURADO', 'FACTURADO_SAEI', 'ULTIMA_FACTURA', 'IGNORAR_FACTURA', 'PRES', 'TOTAL'];
     
     for (const key in arch) {
         if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
         
-        let valor = arch[key];
-        let url = '';
-
-        // --- LÓGICA DE DETECCIÓN DE URL ---
-        if (typeof valor === 'string') {
-            url = valor; // Formato antiguo
-        } else if (typeof valor === 'object' && valor !== null) {
-            // Formato nuevo: busca dentro del objeto
-            // Probamos las claves más comunes que suele devolver Cloudinary/DB
-            url = valor.secure_url || valor.url || valor.link || '';
-        }
-        // ----------------------------------
+        const valor = arch[key];
         
-        if (url && url.startsWith('http')) {
-            let displayNombre = key.replace(/_/g, ' | ').toUpperCase();
-            
-            lista.innerHTML += `
-                <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-descarga">
-                    <span>📄 ${displayNombre}</span>
-                    <span>⬇️</span>
-                </a>`;
+        // --- LÓGICA DE DIBUJO ---
+        if (typeof valor === 'string' && valor.startsWith('http')) {
+            // Caso A: Es una URL directa (formato antiguo)
+            renderizarLink(key, valor);
+        } 
+        else if (typeof valor === 'object' && valor !== null) {
+            // Caso B: Es un objeto (formato nuevo, como ASISTENCIA_4 -> 2026)
+            for (const subKey in valor) {
+                const subValor = valor[subKey];
+                if (typeof subValor === 'string' && subValor.startsWith('http')) {
+                    renderizarLink(`${key} | ${subKey}`, subValor);
+                }
+            }
         }
     }
-    
+        
     if (lista.innerHTML === '') {
-        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente o el formato no es compatible.</p>';
+        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente.</p>';
     }
+}
+
+// Función auxiliar para no repetir código
+function renderizarLink(nombre, url) {
+    const lista = document.getElementById('listaLinks');
+    const displayNombre = nombre.replace(/_/g, ' | ').toUpperCase();
+    lista.innerHTML += `
+        <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-descarga">
+            <span>📄 ${displayNombre}</span>
+            <span>⬇️</span>
+        </a>`;
 }
     
     function filtrarSelect() {
