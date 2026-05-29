@@ -161,22 +161,25 @@ const widget = cloudinary.createUploadWidget({
     const ignorar = ['DETALLE', 'CUIT','EXENTO', 'FACTURADO', 'FACTURADO_SAEI','ULTIMA_FACTURA', 'IGNORAR_FACTURA', 'PRES', 'TOTAL'];
     
     // Iteramos sobre los archivos encontrados
-    for (const key in arch) {
-        // 1. Filtramos: Si es un campo técnico o una observación, lo saltamos
-        if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
-        
-        // 2. Formateamos el nombre: "ASISTENCIA_05-2026" -> "ASISTENCIA | 05-2026"
+    // ... dentro de la función alSeleccionarPaciente
+for (const key in arch) {
+    if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
+    
+    // 1. Aseguramos que la URL sea un string
+    const url = typeof arch[key] === 'string' ? arch[key] : '';
+    
+    // 2. Solo agregamos el link si la URL es válida
+    if (url.startsWith('http')) {
         let displayNombre = key.replace(/_/g, ' | ').toUpperCase();
         
-        // 3. Renderizamos el botón limpio en el historial
         lista.innerHTML += `
-            <a href="${arch[key]}" target="_blank" class="link-descarga">
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-descarga">
                 <span>📄 ${displayNombre}</span>
                 <span>⬇️</span>
             </a>`;
     }
-    
-    // Si no quedaron archivos, avisamos
+}
+        // Si no quedaron archivos, avisamos
     if (lista.innerHTML === '') {
         lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente.</p>';
     }
