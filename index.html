@@ -116,18 +116,43 @@ async function manejarSubida(tipo, url) {
     const m = document.getElementById('mesSelector').value;
     const o = document.getElementById('observaciones').value;
 
-    if(tipo === 'ASISTENCIA') {
-        // ... (tu lógica de auditoría igual)
-        if(data.aprobado) {
-            alert("✨ ¡Asistencia impecable!");
-            await guardarEnDB(tipo, url, p, m, o);
-            // AGREGA EL AWAIT AQUÍ:
-            await alSeleccionarPaciente(); 
-        } else alert("❌ Errores:\n" + data.errores.join("\n"));
+    if (tipo === 'ASISTENCIA') {
+        document.getElementById('loaderAsistencia').style.display = 'block';
+
+        try {
+            // ESTAS LÍNEAS FALTABAN: Aquí se hace la petición y se define 'data'
+            const res = await fetch(`${API_BASE}/api/auditor-dai`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
+            });
+            
+            const data = await res.json(); // <-- Aquí se define 'data'
+            document.getElementById('loaderAsistencia').style.display = 'none';
+
+            // Ahora 'data' existe y puedes usarlo sin error
+            if (data.aprobado) {
+                alert("✨ ¡Asistencia impecable!");
+                await guardarEnDB(tipo, url, p, m, o);
+                await alSeleccionarPaciente();
+            } else {
+                // Manejo de errores devueltos por el auditor
+                const msg = data.errores ? data.errores.join("\n") : "Error de procesamiento";
+                alert("❌ Errores:\n" + msg);
+            }
+        } catch (err) {
+            document.getElementById('loaderAsistencia').style.display = 'none';
+            alert("Error al conectar con el auditor: " + err.message);
+        }
     } else {
+        // Lógica para otros documentos que no necesitan auditoría
         await guardarEnDB(tipo, url, p, m, o);
-        // AGREGA EL AWAIT AQUÍ:
-        await alSeleccionarPaciente(); 
+        if (tipo === 'FACTURA') {
+            document.getElementById('ticketFinal').style.display = 'block';
+        } else {
+            alert(`✅ ${tipo} guardado.`);
+        }
+        await alSeleccionarPaciente();
     }
 }
 
