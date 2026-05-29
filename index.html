@@ -142,11 +142,11 @@ async function manejarSubida(tipo, url) {
     const p = document.getElementById('pacienteSelector').value;
     if(!p) return;
     
-    // AGREGAMOS ?t=${Date.now()} para forzar al navegador a no usar caché
+    // Llamada con timestamp para evitar caché
     const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}?t=${Date.now()}`);
     const arch = await res.json(); 
     
-    console.log("Datos recibidos:", arch); // MIRA LA CONSOLA (F12) PARA VER QUÉ RECIBES
+    console.log("Datos recibidos para analizar:", arch); 
     
     const lista = document.getElementById('listaLinks');
     lista.innerHTML = '';
@@ -156,10 +156,20 @@ async function manejarSubida(tipo, url) {
     for (const key in arch) {
         if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
         
-        const url = typeof arch[key] === 'string' ? arch[key] : '';
+        let valor = arch[key];
+        let url = '';
+
+        // --- LÓGICA DE DETECCIÓN DE URL ---
+        if (typeof valor === 'string') {
+            url = valor; // Formato antiguo
+        } else if (typeof valor === 'object' && valor !== null) {
+            // Formato nuevo: busca dentro del objeto
+            // Probamos las claves más comunes que suele devolver Cloudinary/DB
+            url = valor.secure_url || valor.url || valor.link || '';
+        }
+        // ----------------------------------
         
-        if (url.startsWith('http')) {
-            // Mejoramos el formato de visualización para que sea legible
+        if (url && url.startsWith('http')) {
             let displayNombre = key.replace(/_/g, ' | ').toUpperCase();
             
             lista.innerHTML += `
@@ -168,19 +178,13 @@ async function manejarSubida(tipo, url) {
                     <span>⬇️</span>
                 </a>`;
         }
-    
-    
-    if (lista.innerHTML === '') {
-        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente.</p>';
     }
-}
-        // Si no quedaron archivos, avisamos
+    
     if (lista.innerHTML === '') {
-        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente.</p>';
+        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente o el formato no es compatible.</p>';
     }
 }
     
-
     function filtrarSelect() {
         const t = document.getElementById('busqueda').value.toLowerCase();
         const op = document.getElementById('pacienteSelector').options;
