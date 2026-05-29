@@ -94,13 +94,16 @@
     // Widget Cloudinary (sin cambios)
     // Busca esta parte en tu script y cámbiala:
 const widget = cloudinary.createUploadWidget({
-    cloudName: CLOUD_NAME, 
-    uploadPreset: "preajuste_clínica" 
-}, 
-(error, result) => { 
-    if (!error && result && result.event === "success") {
-        manejarSubida(window.currentDocType, result.info.secure_url); 
-    } 
+    cloudName: "duscmxxws",
+    
+}, (error, result) => { 
+    if (error) {
+        console.error("Error capturado:", error);
+        return;
+    }
+    if (result && result.event === "success") {
+        manejarSubida(window.currentDocType, result.info.secure_url);
+    }
 });
     function abrirCloudinary(tipo) {
         const p = document.getElementById('pacienteSelector').value;
