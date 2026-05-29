@@ -111,33 +111,25 @@ const widget = cloudinary.createUploadWidget({
         window.currentDocType = tipo;
         widget.open();
     }
+async function manejarSubida(tipo, url) {
+    const p = document.getElementById('pacienteSelector').value;
+    const m = document.getElementById('mesSelector').value;
+    const o = document.getElementById('observaciones').value;
 
-    async function manejarSubida(tipo, url) {
-        const p = document.getElementById('pacienteSelector').value;
-        const m = document.getElementById('mesSelector').value;
-        const o = document.getElementById('observaciones').value;
-
-        if(tipo === 'ASISTENCIA') {
-            document.getElementById('loaderAsistencia').style.display = 'block';
-            const res = await fetch(`${API_BASE}/api/auditor-dai`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
-            });
-            const data = await res.json();
-            document.getElementById('loaderAsistencia').style.display = 'none';
-            if(data.aprobado) {
-                alert("✨ ¡Asistencia impecable!");
-                await guardarEnDB(tipo, url, p, m, o);
-                if(new Date().getDate() <= 5) document.getElementById('btnFactura').disabled = false;
-            } else alert("❌ Errores:\n" + data.errores.join("\n"));
-        } else {
+    if(tipo === 'ASISTENCIA') {
+        // ... (tu lógica de auditoría igual)
+        if(data.aprobado) {
+            alert("✨ ¡Asistencia impecable!");
             await guardarEnDB(tipo, url, p, m, o);
-            if(tipo === 'FACTURA') document.getElementById('ticketFinal').style.display = 'block';
-            else alert(`✅ ${tipo} guardado.`);
-        }
-        alSeleccionarPaciente();
+            // AGREGA EL AWAIT AQUÍ:
+            await alSeleccionarPaciente(); 
+        } else alert("❌ Errores:\n" + data.errores.join("\n"));
+    } else {
+        await guardarEnDB(tipo, url, p, m, o);
+        // AGREGA EL AWAIT AQUÍ:
+        await alSeleccionarPaciente(); 
     }
+}
 
     async function guardarEnDB(tipo, url, paciente, mes, obs) {
         await fetch(`${API_BASE}/api/guardar-archivo`, {
@@ -150,33 +142,36 @@ const widget = cloudinary.createUploadWidget({
     const p = document.getElementById('pacienteSelector').value;
     if(!p) return;
     
-    // Llamada segura a la API
-    const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}`);
+    // AGREGAMOS ?t=${Date.now()} para forzar al navegador a no usar caché
+    const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}?t=${Date.now()}`);
     const arch = await res.json(); 
+    
+    console.log("Datos recibidos:", arch); // MIRA LA CONSOLA (F12) PARA VER QUÉ RECIBES
     
     const lista = document.getElementById('listaLinks');
     lista.innerHTML = '';
     
-    // Lista de campos técnicos que queremos ocultar del historial
     const ignorar = ['DETALLE', 'CUIT','EXENTO', 'FACTURADO', 'FACTURADO_SAEI','ULTIMA_FACTURA', 'IGNORAR_FACTURA', 'PRES', 'TOTAL'];
     
-    // Iteramos sobre los archivos encontrados
-    // ... dentro de la función alSeleccionarPaciente
-for (const key in arch) {
-    if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
-    
-    // 1. Aseguramos que la URL sea un string
-    const url = typeof arch[key] === 'string' ? arch[key] : '';
-    
-    // 2. Solo agregamos el link si la URL es válida
-    if (url.startsWith('http')) {
-        let displayNombre = key.replace(/_/g, ' | ').toUpperCase();
+    for (const key in arch) {
+        if(key.startsWith('OBSERVACIONES') || ignorar.includes(key.toUpperCase())) continue;
         
-        lista.innerHTML += `
-            <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-descarga">
-                <span>📄 ${displayNombre}</span>
-                <span>⬇️</span>
-            </a>`;
+        const url = typeof arch[key] === 'string' ? arch[key] : '';
+        
+        if (url.startsWith('http')) {
+            // Mejoramos el formato de visualización para que sea legible
+            let displayNombre = key.replace(/_/g, ' | ').toUpperCase();
+            
+            lista.innerHTML += `
+                <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-descarga">
+                    <span>📄 ${displayNombre}</span>
+                    <span>⬇️</span>
+                </a>`;
+        }
+    }
+    
+    if (lista.innerHTML === '') {
+        lista.innerHTML = '<p style="color: #a0aec0;">No hay documentos registrados para este paciente.</p>';
     }
 }
         // Si no quedaron archivos, avisamos
