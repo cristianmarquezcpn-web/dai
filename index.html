@@ -121,7 +121,7 @@ async function manejarSubida(tipo, url) {
 
         try {
             // ESTAS LÍNEAS FALTABAN: Aquí se hace la petición y se define 'data'
-            const res = await fetch(`${API_BASE}/api/auditor_dai`, {
+            const res = await fetch(`${API_BASE}/api/auditor-dai`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
@@ -133,10 +133,6 @@ async function manejarSubida(tipo, url) {
             // Ahora 'data' existe y puedes usarlo sin error
             if (data.aprobado) {
                 alert("✨ ¡Asistencia impecable!");
-                
-                // Habilitamos el botón de factura tras validación exitosa
-                document.getElementById('btnFactura').disabled = false;
-                
                 await guardarEnDB(tipo, url, p, m, o);
                 await alSeleccionarPaciente();
             } else {
@@ -159,6 +155,7 @@ async function manejarSubida(tipo, url) {
         await alSeleccionarPaciente();
     }
 }
+
     async function guardarEnDB(tipo, url, paciente, mes, obs) {
         await fetch(`${API_BASE}/api/guardar-archivo`, {
             method: 'POST',
@@ -167,7 +164,6 @@ async function manejarSubida(tipo, url) {
         });
     }
     async function alSeleccionarPaciente() {
-    document.getElementById('btnFactura').disabled = true;
     const p = document.getElementById('pacienteSelector').value;
     if(!p) return;
     
