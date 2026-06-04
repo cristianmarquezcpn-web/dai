@@ -121,7 +121,7 @@ async function manejarSubida(tipo, url) {
 
         try {
             // ESTAS LÍNEAS FALTABAN: Aquí se hace la petición y se define 'data'
-            const res = await fetch(`${API_BASE}/api/auditor-dai`, {
+            const res = await fetch(`${API_BASE}/api/auditor_dai`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
