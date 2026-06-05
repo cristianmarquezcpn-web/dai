@@ -85,14 +85,13 @@
         if (ahora.getDate() > 5) document.getElementById('alertaFecha').classList.remove('hidden');
 
         try {
-            const res = await fetch(`${API_BASE}/api/listar-pacientes`);
+            const res = await fetch(`${API_BASE}/api/listar_pacientes`);
             const lista = await res.json();
             lista.forEach(p => document.getElementById('pacienteSelector').innerHTML += `<option value="${p}">${p}</option>`);
         } catch(e) { console.error("Error al cargar pacientes"); }
     };
 
-    // Widget Cloudinary (sin cambios)
-    // Busca esta parte en tu script y cámbiala:
+    
 const widget = cloudinary.createUploadWidget({
     cloudName: "duscmxxws", 
     uploadPreset: "clinic_preset" 
@@ -121,7 +120,7 @@ async function manejarSubida(tipo, url) {
 
         try {
             // CAMBIA ESTO
-           const res = await fetch(`${API_BASE}/api/auditor_dai`, { // <--- GUION BAJO
+           const res = await fetch(`${API_BASE}/api/auditor_dai`, { 
            method: 'POST',
            headers: {'Content-Type': 'application/json'},
            body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
@@ -161,7 +160,7 @@ async function manejarSubida(tipo, url) {
     const p = document.getElementById('pacienteSelector').value;
     if(!p) return;
     
-    const res = await fetch(`${API_BASE}/api/listar-archivos/${encodeURIComponent(p)}?t=${Date.now()}`);
+    const res = await fetch(`${API_BASE}/api/listar_archivos/${encodeURIComponent(p)}?t=${Date.now()}`);
     const arch = await res.json(); 
     
     const lista = document.getElementById('listaLinks');
