@@ -120,12 +120,12 @@ async function manejarSubida(tipo, url) {
         document.getElementById('loaderAsistencia').style.display = 'block';
 
         try {
-            const res = await fetch(`${API_BASE}/api/auditor-dai`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
-            });
-            
+            // CAMBIA ESTO
+           const res = await fetch(`${API_BASE}/api/auditor_dai`, { // <--- GUION BAJO
+           method: 'POST',
+           headers: {'Content-Type': 'application/json'},
+           body: JSON.stringify({ url_asistencia: url, mes_esperado: m })
+    });
             const data = await res.json();
             document.getElementById('loaderAsistencia').style.display = 'none';
 
