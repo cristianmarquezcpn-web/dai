@@ -212,11 +212,52 @@ async function manejarSubida(tipo, url) {
 function renderizarLink(nombre, url) {
     const lista = document.getElementById('listaLinks');
     const displayNombre = nombre.replace(/_/g, ' | ').toUpperCase();
-    lista.innerHTML += `
-        <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-descarga">
-            <span>📄 ${displayNombre}</span>
-            <span>⬇️</span>
-        </a>`;
+    
+    // Creamos el contenedor principal
+    const div = document.createElement('div');
+    div.className = 'link-descarga';
+    
+    // Creamos el link del archivo
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.style.textDecoration = "none";
+    link.style.color = "inherit";
+    link.style.flexGrow = "1";
+    link.innerHTML = `<span>📄 ${displayNombre}</span>`;
+    
+    // Creamos el botón de borrar
+    const btnBorrar = document.createElement('button');
+    btnBorrar.innerHTML = "❌";
+    btnBorrar.style.background = "#fff5f5";
+    btnBorrar.style.border = "1px solid #feb2b2";
+    btnBorrar.style.borderRadius = "4px";
+    btnBorrar.style.marginLeft = "10px";
+    btnBorrar.style.cursor = "pointer";
+    
+    // Asignamos la función de borrado
+    btnBorrar.onclick = async () => {
+        if (!confirm(`¿Estás seguro de eliminar ${displayNombre}?`)) return;
+        
+        const p = document.getElementById('pacienteSelector').value;
+        const res = await fetch(`${API_BASE}/api/borrar_archivo`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({paciente: p, clave: nombre})
+        });
+        
+        if (res.ok) {
+            div.remove(); // Quitamos el elemento de la pantalla
+        } else {
+            alert("Error al borrar el archivo.");
+        }
+    };
+    
+    // Unimos todo
+    div.appendChild(link);
+    div.appendChild(btnBorrar);
+    lista.appendChild(div);
 }
     
     function filtrarSelect() {
