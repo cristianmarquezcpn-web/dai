@@ -94,7 +94,10 @@
     
 const widget = cloudinary.createUploadWidget({
     cloudName: "duscmxxws", 
-    uploadPreset: "clinic_preset" 
+    uploadPreset: "clinic_preset",
+    sources: ['local', 'camera', 'google_drive'], // Permite elegir origen
+    clientAllowedFormats: ["jpg", "jpeg", "png", "pdf"], // <--- AGREGA ESTO
+    maxFiles: 1
 }, (error, result) => { 
     if (error) {
         console.error("Error exacto:", error);
