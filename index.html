@@ -107,12 +107,23 @@ const widget = cloudinary.createUploadWidget({
         manejarSubida(window.currentDocType, result.info.secure_url); 
     }
 });
-    function abrirCloudinary(tipo) {
-        const p = document.getElementById('pacienteSelector').value;
-        if(!p) return alert("Seleccioná un paciente primero.");
-        window.currentDocType = tipo;
-        widget.open();
+function abrirCloudinary(tipo) {
+    const p = document.getElementById('pacienteSelector').value;
+    
+    // 1. Validación de selección previa
+    if(!p) return alert("Seleccioná un paciente primero.");
+    
+    // 2. Lógica de restricción solo para FACTURA después del día 5
+    const ahora = new Date();
+    if (ahora.getDate() > 5 && tipo === 'FACTURA') {
+        alert("⚠️ Acceso denegado: Ya pasamos el día 5 del mes. La carga de facturas está deshabilitada.");
+        return; // Detiene la ejecución aquí
     }
+
+    // 3. Si pasa las validaciones, abre el widget
+    window.currentDocType = tipo;
+    widget.open();
+}    
 async function manejarSubida(tipo, url) {
     const p = document.getElementById('pacienteSelector').value;
     const m = document.getElementById('mesSelector').value;
